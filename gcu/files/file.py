@@ -1,5 +1,6 @@
 import os
 import uuid
+import requests
 import mimetypes
 from typing import Union, List
 
@@ -21,18 +22,53 @@ class File:
         An object representing any kind of file.
         """
 
-        self.filename = kwargs.get("filename", None)
-        self.path = kwargs.get("path", None)
-
-        self.location = kwargs.get("location", None)
-        self.local_path = kwargs.get("local_path", None)
+        self.path = kwargs.get("filename", None)
         self.content = kwargs.get("content", None)
+
+        # check if online, if so, check if need to dl ?
+        # when downloading, will need to update path before next step ?
+
+        # When is a theoretically existing file:
+        if self.path != None and self.download and self.content == None:
+            self.filename = kwargs.get("filename", None)
+            self.dir = kwargs.get("path", None)
+
+        
         self.ext = kwargs.get("ext", None)
         self.mime = kwargs.get("mime", None)
-
         if self.filename != None:
             self.ext = os.path.splitext(self.filename)[1][1:]
             self.mime = mimetypes.guess_type(self.filename)[0].split("/")
+
+def download(url, path = "", **kwargs) -> Union[File, List[File]]:
+    """
+    Download media at the given url to the given path in the current colab session.
+    
+    Default path is "content/". If the path doesn't exist, the path will be created. Will return a gcu.files.File object, or a list of gcu.file.File objects if multiple files were uploaded. If the upload is cancelled, returns None.
+
+    url can be a list of urls.
+
+    kwargs
+    ----------
+    new_filename (str)
+        default: None. When None, the original file keeps it's name. When "_uuid", the filename is updated with a unique name. When any other string, the filename is updated (for multiple files, and incremental number is added).
+    range (int)
+        default: None
+    """
+
+    downloaded = []
+    if isinstance(url, str):
+        _download_online_file(url, os.path.join("/content", os.path.basename(url)), kwargs.get("range", None))
+        downloaded.push(os.path.join("/content", os.path.basename(url)))
+    else:
+        for item in url:
+            _download_online_file(url, os.path.join("/content", os.path.basename(item)), kwargs.get("range", None))
+            downloaded.push(os.path.join("/content", os.path.basename(item)))
+
+    if len(downloaded) > 0:
+        return _process_media_get(path, downloaded, kwargs.get("new_filename", None))
+    else:
+        return None
 
 def upload(path = "", **kwargs) -> Union[File, List[File], None]:
     """
@@ -50,44 +86,60 @@ def upload(path = "", **kwargs) -> Union[File, List[File], None]:
     uploaded = files.upload()
 
     if uploaded:
-        # Create directory if needed
-        if os.path.isdir(os.path.join("/content", path)) == False:
-            os.makedirs(os.path.join("/content", path))
-
-        # Create a list of new names if needed
-        new_names = list(uploaded.keys())
-
-        # As uuids
-        if kwargs.get("new_filename", None) == "_uuid":
-            new_names = []
-            for item in list(uploaded.keys()):
-                new_names.append(str(uuid.uuid4()) + os.path.splitext(os.path.basename(item))[1])
-        
-        # As string
-        elif isinstance(kwargs.get("new_filename", None), str):
-            new_names = []
-            if len(list(uploaded.keys())) == 1:
-                new_names.append(kwargs.get("new_filename", None) + os.path.splitext(os.path.basename(list(uploaded.keys())[0]))[1])
-            else:
-                for i, item in enumerate(list(uploaded.keys())):
-                    new_names.append(kwargs.get("new_filename", None) + f" {i}" + os.path.splitext(os.path.basename(item))[1])
-        
-        # Move uploaded files
-        for i, item in enumerate(list(uploaded.keys())):
-            original_path = os.path.join('/content', item)
-            new_path = os.path.join("/content", path, new_names[i])
-            os.rename(original_path, new_path)
-
-        # Create File objects
-        path_to_add = os.path.join("/content", path)
-        if path == "":
-            path_to_add = "/content"
-        if len(list(uploaded.keys())) == 1:
-            return File(filename = new_names[0], path = path_to_add)
-        else:
-            ret = []
-            for filename in new_names:
-                ret.append(File(filename = filename, path = path_to_add))
-            return ret
+        return _process_media_get(path, list(uploaded.keys()), kwargs.get("new_filename", None))
     else:
         return None
+
+def _download_online_file(url, path, range):
+    """Download a file to base colab directory."""
+    if range == None:
+        response = requests.get(url, stream=True)
+    else:
+        response = requests.get(url, headers={'Range': f'bytes={range}'}, stream=True)
+    if response.status_code == 206 or response.status_code == 200:
+        with open(path, 'wb') as file:
+            for chunk in response.iter_content(chunk_size=1024):
+                file.write(chunk)
+
+def _process_media_get(path, file_list, new_filename):
+    """Once a file has been retrived, move it and return File objects."""   
+
+    # Create directory if needed
+    if os.path.isdir(os.path.join("/content", path)) == False:
+        os.makedirs(os.path.join("/content", path))
+
+    # Create a list of new names if needed
+    new_names = file_list
+
+    # As uuids
+    if new_filename == "_uuid":
+        new_names = []
+        for item in file_list:
+            new_names.append(str(uuid.uuid4()) + os.path.splitext(os.path.basename(item))[1])
+    
+    # As string
+    elif isinstance(new_filename, str):
+        new_names = []
+        if len(file_list) == 1:
+            new_names.append(new_filename + os.path.splitext(os.path.basename(file_list[0]))[1])
+        else:
+            for i, item in enumerate(file_list):
+                new_names.append(new_filename + f" {i}" + os.path.splitext(os.path.basename(item))[1])
+    
+    # Move uploaded files
+    for i, item in enumerate(file_list):
+        original_path = os.path.join('/content', item)
+        new_path = os.path.join("/content", path, new_names[i])
+        os.rename(original_path, new_path)
+
+    # Create File objects
+    path_to_add = os.path.join("/content", path)
+    if path == "":
+        path_to_add = "/content"
+    if len(file_list) == 1:
+        return File(path = os.path.join(path_to_add, new_names[0]))
+    else:
+        ret = []
+        for filename in new_names:
+            ret.append(File(path = os.path.join(path_to_add, filename)))
+        return ret
