@@ -24,14 +24,15 @@ class File:
 
         self.path = kwargs.get("filename", None)
         self.content = kwargs.get("content", None)
+        self.filename = kwargs.get("filename", None)
+        self.dir = kwargs.get("path", None)
 
         # check if online, if so, check if need to dl ?
         # when downloading, will need to update path before next step ?
 
-        # When is a theoretically existing file:
-        if self.path != None and self.download and self.content == None:
-            self.filename = kwargs.get("filename", None)
-            self.dir = kwargs.get("path", None)
+        if self.path != None:
+            self.filename = os.path.basename(self.path)
+            self.dir = os.path.dirname(self.path)
 
         
         self.ext = kwargs.get("ext", None)
