@@ -22,10 +22,10 @@ class File:
         An object representing any kind of file.
         """
 
-        self.path = kwargs.get("filename", None)
+        self.path = kwargs.get("path", None)
         self.content = kwargs.get("content", None)
         self.filename = kwargs.get("filename", None)
-        self.dir = kwargs.get("path", None)
+        self.dir = kwargs.get("dir", None)
 
         # check if online, if so, check if need to dl ?
         # when downloading, will need to update path before next step ?
