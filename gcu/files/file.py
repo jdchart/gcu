@@ -57,7 +57,7 @@ def upload(path = "", **kwargs) -> File:
 
     uploaded = files.upload()
 
-    if len(list(uploaded.keys())) == 0:
+    if uploaded:
         if os.path.isdir(os.path.join("/content", path)) == False:
             os.makedirs(os.path.join("/content", path))
 
