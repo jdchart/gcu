@@ -1,1 +1,1 @@
-from .test import test_func
+from . import files
