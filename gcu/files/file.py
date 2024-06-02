@@ -69,7 +69,7 @@ def upload(path = "", **kwargs) -> File:
         elif isinstance(kwargs.get("new_filename", None), str):
             new_names = []
             if len(list(uploaded.keys())) == 1:
-                new_names.append(kwargs.get("new_filename", None) + os.path.splitext(os.path.basename(item))[1])
+                new_names.append(kwargs.get("new_filename", None) + os.path.splitext(os.path.basename(list(uploaded.keys())[0]))[1])
             else:
                 for i, item in enumerate(list(uploaded.keys())):
                     new_names.append(kwargs.get("new_filename", None) + f" {i}" + os.path.splitext(os.path.basename(item))[1])
