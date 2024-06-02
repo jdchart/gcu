@@ -32,7 +32,11 @@ class File:
 
         if self.filename != None:
             self.ext = os.path.splitext(self.filename)[1][1:]
-            self.mime = mimetypes.guess_type(self.filename)
+            self.mime = mimetypes.guess_type(self.filename)[0].split("/")
+
+            print(mimetypes.guess_type(self.filename))
+            print(mimetypes.guess_type(self.filename)[0])
+            print(mimetypes.guess_type(self.filename)[0].split("/"))
 
 def upload(path = "", **kwargs) -> Union[File, List[File], None]:
     """
