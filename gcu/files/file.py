@@ -1,7 +1,9 @@
 import os
 import uuid
+import mimetypes
 from typing import Union, List
 
+# If working locally, create a mock google.colab package:
 try:
     from google.colab import files
 except ImportError:
@@ -15,6 +17,10 @@ except ImportError:
 
 class File:
     def __init__(self, **kwargs) -> None:
+        """
+        An object representing any kind of file.
+        """
+
         self.filename = kwargs.get("filename", None)
         self.path = kwargs.get("path", None)
 
@@ -24,18 +30,8 @@ class File:
         self.ext = kwargs.get("ext", None)
         self.mime = kwargs.get("mime", None)
 
-        
-
-
-# import mimetypes
-
-
-# # my_file = gcu.files.File()
-
-# # print(my_file.ext_to_mime("mp3"))
-
-# print(mimetypes.guess_type("test.mp3"))
-
+        self.ext = os.path.splitext(self.filename)[0]
+        self.mime = mimetypes.guess_type(self.filename).split("/")
 
 def upload(path = "", **kwargs) -> Union[File, List[File], None]:
     """
@@ -47,7 +43,6 @@ def upload(path = "", **kwargs) -> Union[File, List[File], None]:
     ----------
     new_filename (str)
         default: None. When None, the original file keeps it's name. When "_uuid", the filename is updated with a unique name. When any other string, the filename is updated (for multiple files, and incremental number is added).
-
     """
 
     # Trigger upload
