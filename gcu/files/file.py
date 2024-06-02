@@ -31,7 +31,7 @@ class File:
         self.mime = kwargs.get("mime", None)
 
         if self.filename != None:
-            self.ext = os.path.splitext(self.filename)[0]
+            self.ext = os.path.splitext(self.filename)[1]
             self.mime = mimetypes.guess_type(self.filename)[0].split("/")
 
 def upload(path = "", **kwargs) -> Union[File, List[File], None]:
@@ -79,12 +79,15 @@ def upload(path = "", **kwargs) -> Union[File, List[File], None]:
             os.rename(original_path, new_path)
 
         # Create File objects
+        path_to_add = os.path.join("/content", path)
+        if path == "":
+            path_to_add = "/content"
         if len(list(uploaded.keys())) == 1:
-            return File(filename = new_names[0], path = os.path.join("/content", path))
+            return File(filename = new_names[0], path = path_to_add)
         else:
             ret = []
             for filename in new_names:
-                ret.append(File(filename = filename, path = os.path.join("/content", path)))
+                ret.append(File(filename = filename, path = path_to_add))
             return ret
     else:
         return None
