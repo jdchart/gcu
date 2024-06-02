@@ -16,20 +16,32 @@ def upload(path = ""):
     """
     Uploads files to the given path in the current colab session.
     
+    Default path is "content/"
     If the path doesn't exist, the path will be created.
-    Will return a gcu.files.File object, or a list of gcu.file.File objects
-    if multiple files were uploaded.
+    Will return a gcu.files.File object, or a list of gcu.file.File objects if multiple files were uploaded.
+    If the upload is cancelled, returns None.
     """
 
     uploaded = files.upload()
 
-    if os.path.isdir(os.path.join("/content", path)) == False:
-        os.makedirs(os.path.join("/content", path))
-    
-    for filename in uploaded.keys():
-        original_path = os.path.join('/content', filename)
-        new_path = os.path.join("/content", path, filename)
-        os.rename(original_path, new_path)
+    if uploaded != None:
+        if os.path.isdir(os.path.join("/content", path)) == False:
+            os.makedirs(os.path.join("/content", path))
+        
+        for filename in uploaded.keys():
+            original_path = os.path.join('/content', filename)
+            new_path = os.path.join("/content", path, filename)
+            os.rename(original_path, new_path)
+
+        if len(list(uploaded) == 1):
+            return File(path = list(uploaded)[0])
+        else:
+            ret = []
+            for filename in uploaded:
+                ret.append(File(path = filename))
+            return ret
+    else:
+        return None
 
 
 class File:
