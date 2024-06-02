@@ -12,7 +12,7 @@ except ImportError:
     files = MockColabFiles()
 
 
-def upload(path = "/"):
+def upload(path = ""):
     """
     Uploads files to the given path in the current colab session.
     
@@ -22,20 +22,14 @@ def upload(path = "/"):
     """
 
     uploaded = files.upload()
-    uploaded = list(uploaded.keys())
 
-    if os.path.isdir(path) == False:
-        os.makedirs(path)
-
-    print(uploaded)
+    if os.path.isdir(os.path.join("/content", path)) == False:
+        os.makedirs(os.path.join("/content", path))
     
-    # for filename in uploaded.keys():
-    #     # Construct the full path of the uploaded file
-    #     original_path = os.path.join('/content', filename)
-    #     # Construct the new path
-    #     new_path = os.path.join(target_directory, filename)
-    #     # Move the file
-    #     os.rename(original_path, new_path)
+    for filename in uploaded.keys():
+        original_path = os.path.join('/content', filename)
+        new_path = os.path.join("/content", path, filename)
+        os.rename(original_path, new_path)
 
 
 class File:
