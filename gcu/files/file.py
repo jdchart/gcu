@@ -10,7 +10,7 @@ except ImportError:
     class MockColabFiles:
         @staticmethod
         def upload():
-            print("Mock function called.")
+            print("Mock upload function called")
             return None
 
     files = MockColabFiles()
@@ -30,8 +30,9 @@ class File:
         self.ext = kwargs.get("ext", None)
         self.mime = kwargs.get("mime", None)
 
-        self.ext = os.path.splitext(self.filename)[0]
-        self.mime = mimetypes.guess_type(self.filename).split("/")
+        if self.filename != None:
+            self.ext = os.path.splitext(self.filename)[0]
+            self.mime = mimetypes.guess_type(self.filename).split("/")
 
 def upload(path = "", **kwargs) -> Union[File, List[File], None]:
     """
