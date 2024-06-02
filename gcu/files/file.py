@@ -65,11 +65,14 @@ def upload(path = "", **kwargs) -> File:
         if kwargs.get("new_filename", None) == "_uuid":
             new_names = []
             for item in list(uploaded.keys()):
-                new_names.append(str(uuid.uuid4()) + "." + os.path.splitext(os.path.basename(item))[1])
+                new_names.append(str(uuid.uuid4()) + os.path.splitext(os.path.basename(item))[1])
         elif isinstance(kwargs.get("new_filename", None), str):
             new_names = []
-            for i, item in enumerate(list(uploaded.keys())):
-                new_names.append(kwargs.get("new_filename", None) + f" {i}." + os.path.splitext(os.path.basename(item))[1])
+            if len(list(uploaded.keys())) == 1:
+                new_names.append(kwargs.get("new_filename", None) + os.path.splitext(os.path.basename(item))[1])
+            else:
+                for i, item in enumerate(list(uploaded.keys())):
+                    new_names.append(kwargs.get("new_filename", None) + f" {i}" + os.path.splitext(os.path.basename(item))[1])
         
         for i, item in enumerate(list(uploaded.keys())):
             original_path = os.path.join('/content', item)
