@@ -12,7 +12,7 @@ except ImportError:
     files = MockColabFiles()
 
 
-def upload(path = ""):
+def upload(path = "/"):
     """
     Uploads files to the given path in the current colab session.
     
