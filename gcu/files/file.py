@@ -33,7 +33,7 @@ def upload(path = ""):
             new_path = os.path.join("/content", path, filename)
             os.rename(original_path, new_path)
 
-        if len(list(uploaded.keys()) == 1):
+        if len(list(uploaded.keys())) == 1:
             return File(path = list(uploaded.keys())[0])
         else:
             ret = []
