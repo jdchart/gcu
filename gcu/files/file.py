@@ -20,6 +20,31 @@ class File:
     def __init__(self, **kwargs) -> None:
         """
         An object representing any kind of file.
+
+        properties
+        ----------
+        path (str)
+            path in the google colabs content/ folder
+        filename (str)
+            just the filename as a string including extension
+        dir (str)
+            just the folder path as a string
+        ext (str)
+            file extension
+        mime (list)
+            the file's mime type (found using mimetypes.guess_type())
+        content ()
+            the content of the file. This will vary according to file type.
+
+        kwargs
+        ----------
+        get_content (bool)
+            default: False. Run the get_content() function on creation.
+
+        methods
+        ----------
+        get_content()
+            retrive the content of the file, the return type changes according to the type of file.
         """
 
         self.path = kwargs.get("path", None)
