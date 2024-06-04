@@ -23,23 +23,30 @@ class File:
         """
 
         self.path = kwargs.get("path", None)
-        self.content = kwargs.get("content", None)
         self.filename = kwargs.get("filename", None)
         self.dir = kwargs.get("dir", None)
+        self.ext = kwargs.get("ext", None)
+        self.mime = kwargs.get("mime", None)
 
-        # check if online, if so, check if need to dl ?
-        # when downloading, will need to update path before next step ?
-
+        # If path local given, get filename and directory:
         if self.path != None:
             self.filename = os.path.basename(self.path)
             self.dir = os.path.dirname(self.path)
 
+        # If filename given, get extension and mime type:
         
-        self.ext = kwargs.get("ext", None)
-        self.mime = kwargs.get("mime", None)
         if self.filename != None:
             self.ext = os.path.splitext(self.filename)[1][1:]
             self.mime = mimetypes.guess_type(self.filename)[0].split("/")
+
+        self.content = kwargs.get("content", None)
+
+        if kwargs.get("get_content", True):
+            if self.filename != None and self.content == None:
+                self.get_content()
+
+    def get_content(self):
+        print("getting content for" + self.filename)
 
 def download(url, path = "", **kwargs) -> Union[File, List[File]]:
     """
@@ -55,6 +62,8 @@ def download(url, path = "", **kwargs) -> Union[File, List[File]]:
         default: None. When None, the original file keeps it's name. When "_uuid", the filename is updated with a unique name. When any other string, the filename is updated (for multiple files, and incremental number is added).
     range (int)
         default: None
+    get_content (bool)
+        default: False. Will run the get_content() function on the File objects once the file is retrieved.
     """
 
     downloaded = []
@@ -65,7 +74,7 @@ def download(url, path = "", **kwargs) -> Union[File, List[File]]:
         downloaded.append(os.path.join(os.path.basename(item)))
 
     if len(downloaded) > 0:
-        return _process_media_get(path, downloaded, kwargs.get("new_filename", None))
+        return _process_media_get(path, downloaded, kwargs.get("new_filename", None), get_content = kwargs.get("get_content", False))
     else:
         return None
 
@@ -79,13 +88,15 @@ def upload(path = "", **kwargs) -> Union[File, List[File], None]:
     ----------
     new_filename (str)
         default: None. When None, the original file keeps it's name. When "_uuid", the filename is updated with a unique name. When any other string, the filename is updated (for multiple files, and incremental number is added).
+    get_content (bool)
+        default: False. Will run the get_content() function on the File objects once the file is retrieved.
     """
 
     # Trigger upload
     uploaded = files.upload()
 
     if uploaded:
-        return _process_media_get(path, list(uploaded.keys()), kwargs.get("new_filename", None))
+        return _process_media_get(path, list(uploaded.keys()), kwargs.get("new_filename", None), get_content = kwargs.get("get_content", False))
     else:
         return None
 
@@ -100,7 +111,7 @@ def _download_online_file(url, path, range):
             for chunk in response.iter_content(chunk_size=1024):
                 file.write(chunk)
 
-def _process_media_get(path, file_list, new_filename):
+def _process_media_get(path, file_list, new_filename, **kwargs):
     """Once a file has been retrived, move it and return File objects."""   
 
     # Create directory if needed
@@ -136,9 +147,9 @@ def _process_media_get(path, file_list, new_filename):
     if path == "":
         path_to_add = "/content"
     if len(file_list) == 1:
-        return File(path = os.path.join(path_to_add, new_names[0]))
+        return File(path = os.path.join(path_to_add, new_names[0]), get_content = kwargs.get("get_content", False))
     else:
         ret = []
         for filename in new_names:
-            ret.append(File(path = os.path.join(path_to_add, filename)))
+            ret.append(File(path = os.path.join(path_to_add, filename), get_content = kwargs.get("get_content", False)))
         return ret
