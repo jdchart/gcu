@@ -62,9 +62,7 @@ def download(url, path = "", **kwargs) -> Union[File, List[File]]:
         url = [url]
     for item in url:
         _download_online_file(item, os.path.join("/content", os.path.basename(item)), kwargs.get("range", None))
-        downloaded.append(os.path.join("/content", os.path.basename(item)))
-
-    print("downloaded\n", downloaded)
+        downloaded.append(os.path.join(os.path.basename(item)))
 
     if len(downloaded) > 0:
         return _process_media_get(path, downloaded, kwargs.get("new_filename", None))
