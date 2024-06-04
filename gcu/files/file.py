@@ -3,6 +3,11 @@ import uuid
 import requests
 import mimetypes
 from typing import Union, List
+from .text_files import *
+from .application_files import *
+from .video_files import *
+from .audio_files import *
+from .image_files import *
 
 # If working locally, create a mock google.colab package:
 try:
@@ -71,7 +76,38 @@ class File:
                 self.get_content()
 
     def get_content(self):
-        print("getting content for" + self.filename)
+        """
+        Retrive the content of the file, the return type changes according to the type of file.
+        """
+
+        if self.mime[0] == "image":
+            return read_image(self.path)
+        elif self.mime[0] == "audio":
+            return read_audio(self.path)
+        elif self.mime[0] == "video":
+            return read_video(self.path)
+        elif self.mime[0] == "application":
+            if self.mime[1] == "json":
+                return read_json(self.path)
+            elif self.mime[1] == "xml":
+                return read_xml(self.path)
+            else:
+                return self._cannot_get_data()
+        elif self.mime[0] == "text":
+            if self.mime[1] == "plain":
+                return read_plain_text(self.path)
+            elif self.mime[1] == "csv":
+                return read_csv(self.path)
+            else:
+                return self._cannot_get_data()
+        else:
+            return self._cannot_get_data()
+        
+    def _cannot_get_data(self):
+        """Return none when cannot get content."""
+
+        print("This file type is not supported for content retrieval!")
+        return None
 
 def download(url, path = "", **kwargs) -> Union[File, List[File]]:
     """

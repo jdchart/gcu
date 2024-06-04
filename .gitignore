@@ -2,3 +2,4 @@ build
 gcu/__pycache__
 gcu.egg-info
 venv
+*DS_Store
