@@ -75,8 +75,7 @@ class File:
 
         if kwargs.get("read_content", True):
             if self.filename != None and self.content == None:
-                read_kwargs_pass = kwargs.get("read_kwargs", {})
-                self.read_content(**read_kwargs_pass)
+                self.read_content(**kwargs.get("read_kwargs", {}))
 
     def read_content(self, **kwargs):
         """
@@ -84,27 +83,27 @@ class File:
         """
 
         if self.mime[0] == "image":
-            return read_image(self.path, **kwargs)
+            self.content = read_image(self.path, **kwargs)
         elif self.mime[0] == "audio":
-            return read_audio(self.path)
+            self.content = read_audio(self.path)
         elif self.mime[0] == "video":
-            return read_video(self.path)
+            self.content = read_video(self.path)
         elif self.mime[0] == "application":
             if self.mime[1] == "json":
-                return read_json(self.path)
+                self.content = read_json(self.path)
             elif self.mime[1] == "xml":
-                return read_xml(self.path)
+                self.content = read_xml(self.path)
             else:
-                return self._cannot_read_data()
+                self.content = self._cannot_read_data()
         elif self.mime[0] == "text":
             if self.mime[1] == "plain":
-                return read_plain_text(self.path)
+                self.content = read_plain_text(self.path)
             elif self.mime[1] == "csv":
-                return read_csv(self.path, **kwargs)
+                self.content = read_csv(self.path, **kwargs)
             else:
-                return self._cannot_read_data()
+                self.content = self._cannot_read_data()
         else:
-            return self._cannot_read_data()
+            self.content = self._cannot_read_data()
         
     def _cannot_read_data(self):
         """Return none when cannot read content."""
