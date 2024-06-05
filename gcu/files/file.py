@@ -75,7 +75,8 @@ class File:
 
         if kwargs.get("read_content", True):
             if self.filename != None and self.content == None:
-                self.read_content(**kwargs.get("read_kwargs", {}))
+                read_kwargs_pass = kwargs.get("read_kwargs", {})
+                self.read_content(**read_kwargs_pass)
 
     def read_content(self, **kwargs):
         """
