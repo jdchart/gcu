@@ -45,6 +45,8 @@ class File:
         ----------
         read_content (bool)
             default: False. Run the read_content() function on creation.
+        read_kwargs (dict)
+            default: None. The kwargs that are passed to the read_content() function.
 
         methods
         ----------
@@ -73,9 +75,9 @@ class File:
 
         if kwargs.get("read_content", True):
             if self.filename != None and self.content == None:
-                self.read_content()
+                self.read_content(**kwargs.get("read_kwargs", None))
 
-    def read_content(self):
+    def read_content(self, **kwargs):
         """
         Retrive the content of the file, the return type changes according to the type of file.
         """
@@ -97,7 +99,7 @@ class File:
             if self.mime[1] == "plain":
                 return read_plain_text(self.path)
             elif self.mime[1] == "csv":
-                return read_csv(self.path)
+                return read_csv(self.path, **kwargs)
             else:
                 return self._cannot_read_data()
         else:
@@ -125,6 +127,8 @@ def download(url, path = "", **kwargs) -> Union[File, List[File]]:
         default: None
     read_content (bool)
         default: False. Will run the read_content() function on the File objects once the file is retrieved.
+    read_kwargs (dict)
+        default: None. The kwargs that are passed to the read_content() function.
     """
 
     downloaded = []
@@ -135,7 +139,7 @@ def download(url, path = "", **kwargs) -> Union[File, List[File]]:
         downloaded.append(os.path.join(os.path.basename(item)))
 
     if len(downloaded) > 0:
-        return _process_media_get(path, downloaded, kwargs.get("new_filename", None), read_content = kwargs.get("read_content", False))
+        return _process_media_get(path, downloaded, kwargs.get("new_filename", None), read_content = kwargs.get("read_content", False), read_kwargs = kwargs.get("read_kwargs", None))
     else:
         return None
 
@@ -151,13 +155,15 @@ def upload(path = "", **kwargs) -> Union[File, List[File], None]:
         default: None. When None, the original file keeps it's name. When "_uuid", the filename is updated with a unique name. When any other string, the filename is updated (for multiple files, and incremental number is added).
     read_content (bool)
         default: False. Will run the read_content() function on the File objects once the file is retrieved.
+    read_kwargs (dict)
+        default: None. The kwargs that are passed to the read_content() function.
     """
 
     # Trigger upload
     uploaded = files.upload()
 
     if uploaded:
-        return _process_media_get(path, list(uploaded.keys()), kwargs.get("new_filename", None), read_content = kwargs.get("read_content", False))
+        return _process_media_get(path, list(uploaded.keys()), kwargs.get("new_filename", None), read_content = kwargs.get("read_content", False), read_kwargs = kwargs.get("read_kwargs", None))
     else:
         return None
 
@@ -208,9 +214,9 @@ def _process_media_get(path, file_list, new_filename, **kwargs):
     if path == "":
         path_to_add = "/content"
     if len(file_list) == 1:
-        return File(path = os.path.join(path_to_add, new_names[0]), read_content = kwargs.get("read_content", False))
+        return File(path = os.path.join(path_to_add, new_names[0]), read_content = kwargs.get("read_content", False), read_kwargs = kwargs.get("read_kwargs", None))
     else:
         ret = []
         for filename in new_names:
-            ret.append(File(path = os.path.join(path_to_add, filename), read_content = kwargs.get("read_content", False)))
+            ret.append(File(path = os.path.join(path_to_add, filename), read_content = kwargs.get("read_content", False), read_kwargs = kwargs.get("read_kwargs", None)))
         return ret
