@@ -1,11 +1,15 @@
+import json
+import xml.etree.ElementTree as ET
+
 def read_json(path):
     """Return json file as dict."""
 
-    #TODO look into reading from web...
-
-    return None
+    with open(path, 'r') as f:
+        return json.load(f)
 
 def read_xml(path):
-    """Return xml file as _______."""
+    """Return xml file as and xml.etree.ElementTree."""
 
-    return None
+    tree = ET.parse(path)
+    root = tree.getroot()
+    return root
