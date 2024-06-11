@@ -2,6 +2,7 @@ import os
 import uuid
 import requests
 import mimetypes
+import subprocess
 from typing import Union, List
 from .text_files import *
 from .application_files import *
@@ -226,9 +227,13 @@ def download_zip(url, path):
 
     temp_zip = os.path.join(path, os.path.basename(url))
 
-    !wget -q -P "{path}" "{url}"
-    !unzip -q -d "{path}" "{temp_zip}"
-    !rm "{temp_zip}"
+    subprocess.run(["!wget", "-q", "-P", f'"{path}"', f'"{url}"'])
+    subprocess.run(["!unzip", "-q", "-d", f'"{path}"', f'"{temp_zip}"'])
+    subprocess.run(["!rm", f'"{temp_zip}"'])
+
+    # !wget -q -P "{path}" "{url}"
+    # !unzip -q -d "{path}" "{temp_zip}"
+    # !rm "{temp_zip}"
 
 def collect_files(path, acceptedFormats = []):
     """Collect all files of accepted format in a given directory."""
