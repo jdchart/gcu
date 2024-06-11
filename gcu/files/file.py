@@ -2,7 +2,7 @@ import os
 import uuid
 import requests
 import mimetypes
-import subprocess
+import zipfile
 from typing import Union, List
 from .text_files import *
 from .application_files import *
@@ -224,16 +224,23 @@ def _process_media_get(path, file_list, new_filename, **kwargs):
     
 def download_zip(url, path):
     """Download a zip file and unpack it's contents at the given path (a folder of the filename will be created)."""
-
+    
+    # Download file:
+    response = requests.get(url)
     temp_zip = os.path.join(path, os.path.basename(url))
+    with open(temp_zip, 'wb') as file:
+        file.write(response.content)
 
-    subprocess.run(["!wget", "-q", "-P", f'"{path}"', f'"{url}"'])
-    subprocess.run(["!unzip", "-q", "-d", f'"{path}"', f'"{temp_zip}"'])
-    subprocess.run(["!rm", f'"{temp_zip}"'])
+    # Create the output folder:
+    if os.path.isdir(path) == False:
+        os.makedirs(path)
 
-    # !wget -q -P "{path}" "{url}"
-    # !unzip -q -d "{path}" "{temp_zip}"
-    # !rm "{temp_zip}"
+    # Unzip:
+    with zipfile.ZipFile(temp_zip, 'r') as zip_ref:
+        zip_ref.extractall(path)
+    
+    # Remove temporary ip file:
+    os.remove(temp_zip)
 
 def collect_files(path, acceptedFormats = []):
     """Collect all files of accepted format in a given directory."""
