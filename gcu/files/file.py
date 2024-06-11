@@ -220,3 +220,26 @@ def _process_media_get(path, file_list, new_filename, **kwargs):
         for filename in new_names:
             ret.append(File(path = os.path.join(path_to_add, filename), read_content = kwargs.get("read_content", False), read_kwargs = kwargs.get("read_kwargs", {})))
         return ret
+    
+def download_zip(url, path):
+    """Download a zip file and unpack it's contents at the given path (a folder of the filename will be created)."""
+
+    temp_zip = os.path.join(path, os.path.basename(url))
+
+    !wget -q -P "{path}" "{url}"
+    !unzip -q -d "{path}" "{temp_zip}"
+    !rm "{temp_zip}"
+
+def collect_files(path, acceptedFormats = []):
+    """Collect all files of accepted format in a given directory."""
+
+    finalList = []
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if len(acceptedFormats) > 0:
+                extension = os.path.splitext(file)[1][1:]
+                if extension in acceptedFormats:
+                    finalList.append(os.path.join(root, file))
+            else:
+                finalList.append(os.path.join(root, file))
+    return finalList

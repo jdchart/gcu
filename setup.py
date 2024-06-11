@@ -6,7 +6,10 @@ long_description= """
 A collection of functions I use to make my Google Colab notebooks cleaner.
 """
 
-required = ["requests"]
+required = [
+    "requests", 
+    "numpy"
+]
 
 setup(
     name="gcu",
