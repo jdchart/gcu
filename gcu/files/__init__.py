@@ -1,1 +1,1 @@
-from .file import File, upload, download, download_zip, collect_files
+from .file import File, upload, download, download_zip, collect_files, download_folder_as_zip
